@@ -2,7 +2,9 @@
 #include<assert.h>
 #include<iostream>
 using namespace std;
-template <class T>
+#include"Alloc.h"
+
+template <class T,class Alloc=Malloc_Alloc>
 class Vector
 {
 public:
@@ -10,6 +12,10 @@ public:
 	typedef ValueType * Pointer;
 	typedef ValueType * Iterator;
 	typedef size_t SizeType;
+protected:
+	//专属空间配置器，一次配置一个元素的大小
+	typedef Simple_Alloc<ValueType, Alloc> Data_Allocator;
+
 protected:
 	Iterator _start;
 	Iterator _finish;

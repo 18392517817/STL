@@ -5,8 +5,9 @@ using namespace std;
 #include<assert.h>
 int main()
 {
-	//VectorTest2();
+	 //VectorTest2();
 	//VectorTest1();
+	 Alloc_Test();
 	system("pause");
 	return 0;
 }
