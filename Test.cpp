@@ -7,7 +7,6 @@ int main()
 {
 	//VectorTest2();
 	//VectorTest1();
-
 	system("pause");
 	return 0;
 }
