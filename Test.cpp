@@ -3,6 +3,7 @@ using namespace std;
 #include"Vector.h"
 #include"Alloc.h"
 #include<assert.h>
+#include"Construct.h"
 int main()
 {
 	 //VectorTest2();

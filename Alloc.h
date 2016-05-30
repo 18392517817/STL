@@ -42,6 +42,7 @@ va_end(ap) 用于将存放可变参数字符串的变量清空（赋值为NULL).
 
 //内存分配失败后处理句柄handler类型
 typedef void(*ALLOC_FUN)();
+
 template<int inst>
 class __Malloc_Alloc_Template
 {
