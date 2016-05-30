@@ -24,16 +24,14 @@ template<class T>
 class __List_Iterator
 {
 public:
-	 typedef __List_Iterator<T> Iterator_Category;
-	//typedef __List_Iterator<T> Iterator;
-
-	typedef __List_Iterator<T> Self;
+    typedef __List_Iterator<T> Iterator_Category;
 	typedef T Value_Type;
 	typedef Value_Type * Pointer;
 	typedef size_t Size_Type;
 	typedef Value_Type & Reference;
 	typedef ptrdiff_t Difference_Type;
-
+	
+	typedef __List_Iterator<T> Self;
 	typedef _ListNode<T>* LinkType;
 
 	LinkType _node;

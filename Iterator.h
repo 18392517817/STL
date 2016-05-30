@@ -97,7 +97,32 @@ struct Iterator_Traits<const T*> {
 	typedef const T*                   Pointer;
 	typedef const T&                   Reference;
 };
-///////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+//Distance_Type()类型萃取的实现 
+template <class T, class Distance>
+inline Distance* Distance_Type(const Input_Iterator<T, Distance>&) {
+	return (Distance*)(0);
+}
+
+template <class T, class Distance>
+inline Distance* Distance_Type(const Forward_Iterator<T, Distance>&) {
+	return (Distance*)(0);
+}
+
+template <class T, class Distance>
+inline Distance*
+Distance_Type(const Bidirectional_Iterator<T, Distance>&) {
+	return (Distance*)(0);
+}
+
+template <class T, class Distance>
+inline Distance*
+Distance_Type(const Random_Access_Iterator<T, Distance>&) {
+	return (Distance*)(0);
+}
+
+template <class T>
+inline ptrdiff_t* Distance_Type(const T*) { return (ptrdiff_t*)(0); }
 
 ///////////////////////////////////////////////////////////////
 //Value_type()类型萃取的实现 
@@ -183,19 +208,19 @@ template <class InputIterator, class Distance>
 inline void Advance(InputIterator& i, Distance n) 
 {
 	/*__Advance(i, n, Iterator_Category(i));*/
-	__Advance(i, n, Iterator_Traits<InputIterator>::Iterator_Category());
+	__Advance(i, n, Iterator_Traits<InputIterator>::Iterator_Category(i));
 }
 #include"List.h"
 #include"Vector.h"
 void Iterator_Test1()
 {
-	List<int>l;
-	l.PushBack(1);
-	l.PushBack(2);
-	l.PushBack(3);
-	l.PushBack(4);
-	cout << "List Distance:" << Distance(l.Begin(),l.End())<<endl;
-	 
+	//List<int>l;
+	//l.PushBack(1);
+	//l.PushBack(2);
+	//l.PushBack(3);
+	//l.PushBack(4);
+	//cout << "List Distance:" << Distance(l.Begin(),l.End())<<endl;
+	// 
 	Vector<int> v;
 	v.PushBack(1);
 	v.PushBack(2);
@@ -207,9 +232,34 @@ void Iterator_Test1()
 
 }
 
+void Iterator_Test2()
+{
+	List<int>l;
+	l.PushBack(1);
+	l.PushBack(2);
+	l.PushBack(3);
+	l.PushBack(4);
+	List<int>::Iterator ListIt = l.Begin();
+	Advance(ListIt,3);
+	cout << "List Advance ? 3:" <<*ListIt << endl;
+
+	Vector<int> v;
+	v.PushBack(1);
+	v.PushBack(2);
+	v.PushBack(3);
+	v.PushBack(4);
+	v.PushBack(5);
+	v.PushBack(6);
+	Vector<int>::Iterator VectorIt = v.Begin();
+	Advance(VectorIt,3);
+	cout << "Vector Advance ? 4 :" << *VectorIt<< endl;
+
+}
+
 
 void Iterator_Test()
 {
 	Iterator_Test1();
+	Iterator_Test2();
 }
 
