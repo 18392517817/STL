@@ -1,6 +1,7 @@
 #pragma once
 
 #define  __STL_TEMPLATE_NULL  template<>
+
 struct __True_Type {
 };
 
