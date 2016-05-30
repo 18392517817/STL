@@ -22,7 +22,7 @@ inline void Destroy(T* pointer) {
 //进而利用__Type_Traits<>求取最适当措施
 template <class ForwardIterator>
 inline void Destroy(ForwardIterator first, ForwardIterator last) {
-	__Destroy(first, last, value_type(first));
+	__Destroy(first, last, Value_Type(first));
 }
 
 //判断元素的数值型别（value type）是否有 trivial destructor

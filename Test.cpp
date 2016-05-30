@@ -5,12 +5,17 @@ using namespace std;
 #include<assert.h>
 #include"Construct.h"
 #include"Iterator.h"
+void Test()
+{
+	//Iterator_Test();
+	Vector_Test();
+	//Alloc_Test();
+
+}
 int main()
 {
-	Iterator_Test();
-	 //VectorTest2();
-	 //VectorTest1();
-	 //Alloc_Test();
+	Test();
+
 	system("pause");
 	return 0;
 }

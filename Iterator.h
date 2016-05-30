@@ -155,9 +155,12 @@ inline T* Value_Type(const T*) { return (T*)(0); }
 //Distance的实现
 template <class InputIterator>
 inline typename Iterator_Traits<InputIterator>::Difference_Type
-__Distance(InputIterator first, InputIterator last, Input_Iterator_Tag) {
+__Distance(InputIterator first, InputIterator last, Input_Iterator_Tag) 
+{
 	Iterator_Traits<InputIterator>::Difference_Type n = 0;
-	while (first != last) {
+	//逐一计算差距
+	while (first != last)
+	{
 		++first; ++n;
 	}
 	return n;
@@ -166,7 +169,9 @@ __Distance(InputIterator first, InputIterator last, Input_Iterator_Tag) {
 template <class RandomAccessIterator>
 inline typename Iterator_Traits<RandomAccessIterator>::Difference_Type
 __Distance(RandomAccessIterator first, RandomAccessIterator last,
-Random_Access_Iterator_Tag) {
+Random_Access_Iterator_Tag)
+{
+	//直接计算差距
 	return last - first;
 }
 
@@ -184,9 +189,17 @@ Distance(InputIterator first, InputIterator last)
 //Advance的实现
 
 template <class InputIterator, class Distance>
-inline void __Advance(InputIterator& i, Distance n, Input_Iterator_Tag) {
+inline void __Advance(InputIterator& i, Distance n, Input_Iterator_Tag)
+{
 	while (n--) ++i;
 }
+//template <class ForwardIterator, class Distance>
+//inline void __Advance(ForwardIterator& i, Distance n, Forward_Iterator_Tag)
+//{
+//	//__Advance(i,n,Input_Iterator_Tag);
+//	while (n--) ++i;
+//
+//}
 
 template <class BidirectionalIterator, class Distance>
 inline void __Advance(BidirectionalIterator& i, Distance n,
@@ -208,19 +221,22 @@ template <class InputIterator, class Distance>
 inline void Advance(InputIterator& i, Distance n) 
 {
 	/*__Advance(i, n, Iterator_Category(i));*/
-	__Advance(i, n, Iterator_Traits<InputIterator>::Iterator_Category(i));
+	__Advance(i, n, Iterator_Traits<InputIterator>::Iterator_Category());
 }
+///////////////////////////////////////////////////////////////////
+//测试用例
 #include"List.h"
 #include"Vector.h"
-void Iterator_Test1()
+//Distance 测试
+void Iterator_Distance_Test()
 {
-	//List<int>l;
-	//l.PushBack(1);
-	//l.PushBack(2);
-	//l.PushBack(3);
-	//l.PushBack(4);
-	//cout << "List Distance:" << Distance(l.Begin(),l.End())<<endl;
-	// 
+	List<int>l;
+	l.PushBack(1);
+	l.PushBack(2);
+	l.PushBack(3);
+	l.PushBack(4);
+	cout << "List Distance:" << Distance(l.Begin(),l.End())<<endl;
+	 
 	Vector<int> v;
 	v.PushBack(1);
 	v.PushBack(2);
@@ -232,7 +248,8 @@ void Iterator_Test1()
 
 }
 
-void Iterator_Test2()
+//Advance()测试
+void Iterator_Advance_Test()
 {
 	List<int>l;
 	l.PushBack(1);
@@ -240,7 +257,7 @@ void Iterator_Test2()
 	l.PushBack(3);
 	l.PushBack(4);
 	List<int>::Iterator ListIt = l.Begin();
-	Advance(ListIt,3);
+	Advance(ListIt,2);
 	cout << "List Advance ? 3:" <<*ListIt << endl;
 
 	Vector<int> v;
@@ -259,7 +276,7 @@ void Iterator_Test2()
 
 void Iterator_Test()
 {
-	Iterator_Test1();
-	Iterator_Test2();
+	Iterator_Distance_Test();
+	Iterator_Advance_Test();
 }
 

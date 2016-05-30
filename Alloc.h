@@ -1,6 +1,6 @@
 #pragma once
 //#include<stdarg.h>
-//#define __DEBUG__
+ #define __DEBUG__
 static string GetFileName(const string& path)
 {
 	char ch = '/';
@@ -521,5 +521,6 @@ void Alloc_Test()
 {
 	Alloc_Test1();
 	Alloc_Test2();
-	Alloc_Test3();
+	//电脑卡死，不过几分钟后就恢复正常
+	//Alloc_Test3();
 }
