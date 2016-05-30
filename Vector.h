@@ -3,19 +3,42 @@
 #include<iostream>
 using namespace std;
 #include"Alloc.h"
-
+#include"Uninitialized.h"
 template <class T,class Alloc=Malloc_Alloc>
 class Vector
 {
 public:
-	typedef T ValueType;
-	typedef ValueType * Pointer;
-	typedef ValueType * Iterator;
-	typedef size_t SizeType;
+	//vector的嵌套型别定义
+	typedef T Value_Type;
+	typedef Value_Type * Pointer;
+	typedef Value_Type * Iterator;
+	typedef size_t Size_Type;
+	typedef Value_Type & Reference;
+	typedef ptrdiff_t Differnce_Type;
+	
 protected:
 	//专属空间配置器，一次配置一个元素的大小
-	typedef Simple_Alloc<ValueType, Alloc> Data_Allocator;
+	typedef Simple_Alloc<Value_Type, Alloc> Data_Allocator;
+	//构造函数，允许指定Vector的大小n和初值value
 
+	void Insert_aux(Iterator position, const T& x);
+	void Deallocate() {
+		if (_start) Data_Allocator::Deallocate(_start, _end_of_storage - _start);
+	}
+	//填充并初始化
+	void Fill_Initialize(Size_Type n, const T& value) {
+		_start = Allocate_And_Fill(n, value);
+		_finish = _start + n;
+		_end_of_storage = _finish;
+	}
+	//配置空间并填满内容
+	Iterator Allocate_And_Fill(Size_Type n, const T& x) {
+		Iterator result = Data_Allocator::Allocate(n);
+
+		Uninitialized_Fill_n(result, n, x);//全局函数  见Uninitialized.h
+		return result;
+
+	}
 protected:
 	Iterator _start;
 	Iterator _finish;
@@ -25,8 +48,8 @@ protected:
 	{
 		if (_finish == _end_of_storage)
 		{
-			const SizeType old_size = Size();
-			const SizeType len = old_size != 0 ? 2 * old_size : 1;
+			const Size_Type old_size = Size();
+			const Size_Type len = old_size != 0 ? 2 * old_size : 1;
 			T *tmp = new T[len];
 			if (_start)
 			{
@@ -41,16 +64,16 @@ protected:
 public:
 	Iterator Begin(){ return _start; }
 	Iterator End(){ return _finish; }
-	SizeType Size() { return SizeType(End() - Begin()); }
-	SizeType MaxSize() { return SizeType(-1) / sizeof(T); }
-	SizeType Capacity() { return SizeType(_end_of_storage - Begin()); }
-
+	Size_Type Size() { return Size_Type(End() - Begin()); }
+	Size_Type MaxSize() { return Size_Type(-1) / sizeof(T); }
+	Size_Type Capacity() { return Size_Type(_end_of_storage - Begin()); }
 	bool Empty()const{ return Begin() == End(); }
-	ValueType & operator[](SizeType n){ return *(Begin() + n); }
-public:
+	Value_Type & operator[](Size_Type n){ return *(Begin() + n); }
 
+public:
 	Vector() :_start(NULL), _finish(NULL), _end_of_storage(NULL)
 	{}
+	 Vector(Size_Type n, const T&value){ Fill_Initialize(n, value); }
 
 	void PushBack(const T & x)
 	{
@@ -81,6 +104,8 @@ public:
 
 void VectorTest1()
 {
+	//Vector<int> v1(1,2);
+
 	Vector<int> v;
 	v.PushBack(1);
 	v.PushBack(2);
@@ -112,6 +137,7 @@ void VectorTest1()
 
 void VectorTest2()
 {
+	 
 	Vector<int> v;
 	v.PushBack(1);
 	v.PushBack(2);

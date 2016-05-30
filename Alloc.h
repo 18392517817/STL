@@ -440,7 +440,7 @@ public:
 
 //测试内存池一级、二级空间配置器
 
-void Test1()
+void Alloc_Test1()
 {
 	//测试一级配置器
 	cout << "测试调用一级空间配置器分配内存" << endl;
@@ -493,7 +493,7 @@ void Test1()
  
 }
 
-void Test2()
+void Alloc_Test2()
 {
 	cout << "测试内存池空间不足分配"<<endl;
 	char *p1 = Simple_Alloc<char, Default_Alloc>::Allocate(8);
@@ -503,7 +503,7 @@ void Test2()
 
 }
 
-void Test3()
+void Alloc_Test3()
 {
 	cout << "测试系统堆内存耗尽" << endl;
 	Simple_Alloc<char, Default_Alloc>::Allocate(1024 * 1024 * 1024);
@@ -519,7 +519,7 @@ void Test3()
 }
 void Alloc_Test()
 {
-	//Test1();
-	  Test2();
-    //Test3();
+	Alloc_Test1();
+	Alloc_Test2();
+	Alloc_Test3();
 }

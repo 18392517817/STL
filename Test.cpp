@@ -4,11 +4,13 @@ using namespace std;
 #include"Alloc.h"
 #include<assert.h>
 #include"Construct.h"
+#include"Iterator.h"
 int main()
 {
+	Iterator_Test();
 	 //VectorTest2();
-	//VectorTest1();
-	 Alloc_Test();
+	 //VectorTest1();
+	 //Alloc_Test();
 	system("pause");
 	return 0;
 }

@@ -24,14 +24,17 @@ template<class T>
 class __List_Iterator
 {
 public:
-	typedef __List_Iterator<T> Iterator;
-	typedef __List_Iterator<T> Self;
+	 typedef __List_Iterator<T> Iterator_Category;
+	//typedef __List_Iterator<T> Iterator;
 
-	typedef T ValueType;
-	typedef T* Pointer;
-	typedef T& Reference;
+	typedef __List_Iterator<T> Self;
+	typedef T Value_Type;
+	typedef Value_Type * Pointer;
+	typedef size_t Size_Type;
+	typedef Value_Type & Reference;
+	typedef ptrdiff_t Difference_Type;
+
 	typedef _ListNode<T>* LinkType;
-	typedef size_t SizeType;
 
 	LinkType _node;
 	__List_Iterator(){}
@@ -87,9 +90,15 @@ template<class T>
 class List
 { 
 public:
-	typedef __List_Iterator<T> Iterator;
+	 
+	 typedef __List_Iterator<T> Iterator;
 
-	typedef T ValueType;
+	typedef T Value_Type;
+	typedef Value_Type * Pointer;
+	typedef size_t Size_Type;
+	typedef Value_Type & Reference;
+	typedef ptrdiff_t Difference_Type;
+
 	typedef _ListNode<T>* LinkType;
  
 public:
@@ -106,7 +115,7 @@ public:
 		Clear();
 	}
 public:
-	Iterator Insert(Iterator pos,const ValueType &x)
+	Iterator Insert(Iterator pos,const Value_Type &x)
 	{
 		LinkType tmp = new _ListNode<T>(x);
 		LinkType prev = pos._node->_prev;//--pos
