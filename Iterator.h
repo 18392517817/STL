@@ -125,7 +125,7 @@ template <class T>
 inline ptrdiff_t* Distance_Type(const T*) { return (ptrdiff_t*)(0); }
 
 ///////////////////////////////////////////////////////////////
-//Value_type()类型萃取的实现 
+//Value_Type()类型萃取的实现 
 template <class T, class Distance>
 inline T* Value_Type(const Input_Iterator<T, Distance>&) {
 	return (T*)(0);

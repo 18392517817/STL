@@ -29,7 +29,7 @@ inline static void __trace_debug(const char* function,
 }
 /*va_list用于声明一个变量，我们知道函数的可变参数列表其实就是
 一个字符串，所以va_list才被声明为字符型指针，这个类型用于声明
-一个指向参数列表的字符型指针变量，例如：va_list ap;//ap:arguement pointer
+一个指向参数列表的字符型指针变量，例如：va_list ap;//ap:arguement Pointer
 va_start(ap,v),它的第一个参数是指向可变参数字符串的变量，
 第二个参数是可变参数函数的第一个参数，通常用于指定可变参数列表
 中参数的个数。

@@ -10,7 +10,7 @@
 template <class ForwardIterator, class Size, class T>
 inline ForwardIterator Uninitialized_Fill_n(ForwardIterator first, Size n,
 	const T& x) {
-	//?value_type(first) 类型萃取 Itearator.h
+	//?Value_Type(first) 类型萃取 Itearator.h
 	return __Uninitialized_Fill_n(first, n, x, Value_Type(first));
 }
 
@@ -47,7 +47,7 @@ template <class InputIterator, class ForwardIterator>
 inline ForwardIterator
 Uninitialized_Copy(InputIterator first, InputIterator last,
 ForwardIterator result) {
-	return __Uninitialized_Copy(first, last, result, value_type(result));
+	return __Uninitialized_Copy(first, last, result, Value_Type(result));
 }
 //特化
 inline char* Uninitialized_Copy(const char* first, const char* last,

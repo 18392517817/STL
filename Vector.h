@@ -26,11 +26,15 @@ protected:
 	{
 		if (_finish != _end_of_storage)
 		{
+			//还有备用空间
 			Construct(_finish, *(_finish - 1));
 			++_finish;
 			T x_copy = x;
-			//?暂时留下
-			Copy_Backward(position, _finish - 2, _finish - 1);//Al
+			//?暂时留下   完成
+			//把从倒数第二个值到pos位置的值向后移动
+			//Copy_Backward(position, _finish - 2, _finish - 1);//Al 
+			while (position != _finish)
+				_finish = --_finish;
 			*position = x_copy;
 		}
 		else 
@@ -55,13 +59,13 @@ protected:
 		}
 	}
 	void Deallocate() {
-		if (_start) Data_Allocator::Deallocate(_start, __end_of_storage - _start);
+		if (_start) Data_Allocator::Deallocate(_start, _end_of_storage - _start);
 	}
 	//填充并初始化
 	void Fill_Initialize(Size_Type n, const T& value) {
 		_start = Allocate_And_Fill(n, value);
 		_finish = _start + n;
-		__end_of_storage = _finish;
+		_end_of_storage = _finish;
 	}
 	//配置空间并填满内容
 	Iterator Allocate_And_Fill(Size_Type n, const T& x) {
@@ -74,11 +78,15 @@ protected:
 protected:
 	Iterator _start;
 	Iterator _finish;
-	Iterator __end_of_storage;
+	Iterator _end_of_storage;
 	//扩容函数
+	Size_Type Max(Size_Type one,Size_Type two)
+	{
+		return one > two ? one : two;
+	}
 	void _CheckExpan()
 	{
-		if (_finish == __end_of_storage)
+		if (_finish == _end_of_storage)
 		{
 			const Size_Type old_size = Size();
 			const Size_Type len = old_size != 0 ? 2 * old_size : 1;
@@ -89,7 +97,7 @@ protected:
 			}
 			_start = tmp;
 			_finish = _start + old_size;
-			__end_of_storage = _start + len;
+			_end_of_storage = _start + len;
 		}
 	}
 
@@ -98,12 +106,12 @@ public:
 	Iterator End(){ return _finish; }
 	Size_Type Size() { return Size_Type(End() - Begin()); }
 	Size_Type MaxSize() { return Size_Type(-1) / sizeof(T); }
-	Size_Type Capacity() { return Size_Type(__end_of_storage - Begin()); }
+	Size_Type Capacity() { return Size_Type(_end_of_storage - Begin()); }
 	bool Empty()const{ return Begin() == End(); }
 	Reference operator[](Size_Type n){ return *(Begin() + n); }
 
 public:
-	Vector() :_start(NULL), _finish(NULL), __end_of_storage(NULL)
+	Vector() :_start(NULL), _finish(NULL), _end_of_storage(NULL)
 	{}
 	//构造函数，允许指定Vector的大小n和初值value
 
@@ -111,6 +119,7 @@ public:
 	Vector(int n, const T&value){ Fill_Initialize(n, value); }
 	Vector(long n, const T&value){ Fill_Initialize(n, value); }
 	explicit Vector(Size_Type n){ Fill_Initialize(n, T()); }
+	void Insert(Iterator position,Size_Type n,const T&x);//函数代码多，放外面实现
 	~Vector()
 	{
 		Destroy(_start,_finish);
@@ -121,7 +130,7 @@ public:
 	void PushBack(const T & x)
 	{
 		_CheckExpan();
-		assert(_finish != __end_of_storage);
+		assert(_finish != _end_of_storage);
 
 		*_finish = x;
 		++_finish;
@@ -151,7 +160,62 @@ public:
 
 	//}
 };
+template <class T, class Malloc_Alloc>
+void Vector<T, Malloc_Alloc>::Insert(Iterator position, Size_Type n, const T& x) 
+{
+	if (n != 0) 
+	{
+		if (Size_Type(_end_of_storage - _finish) >= n) 
+		{
+			T x_copy = x;
+			const Size_Type elems_after = _finish - position;
+			Iterator old_finish = _finish;
+			if (elems_after > n)
+			{
+				Uninitialized_Copy(_finish - n, _finish, _finish);
+				_finish += n;
+				Copy_Backward(position, old_finish - n, old_finish);
+				Fill(position, position + n, x_copy);
+			}
+			else 
+			{
+				Uninitialized_Fill_n(_finish, n - elems_after, x_copy);
+				_finish += n - elems_after;
+				Uninitialized_Copy(position, old_finish, _finish);
+				_finish += elems_after;
+				Fill(position, old_finish, x_copy);
+			}
+		}
+		else 
+		{
+			const Size_Type old_size = Size();
+			const Size_Type len = old_size + Max(old_size, n);// 
+			Iterator new_start = Data_Allocator::Allocate(len);
+			Iterator new_finish = new_start;
+			 
+				new_finish = Uninitialized_Copy(_start, position, new_start);
+				new_finish = Uninitialized_Fill_n(new_finish, n, x);
+				new_finish = Uninitialized_Copy(position, _finish, new_finish);
+			 
+#         ifdef  __STL_USE_EXCEPTIONS 
+			catch (...) 
+			{
+				Destroy(new_start, new_finish);
+				Data_Allocator::Deallocate(new_start, len);
+				throw;
+			}
+#         endif /* __STL_USE_EXCEPTIONS */
+			Destroy(_start, _finish);
+			Deallocate();
+			_start = new_start;
+			_finish = new_finish;
+			_end_of_storage = new_start + len;
+		}
+	}
+}
 
+///////////////////////////////////////////////////////////////////
+//打印函数
 void Print(Vector<int> &const v)
 {
 	Vector<int>::Iterator it = v.Begin();
@@ -177,16 +241,18 @@ void VectorTest1()
 	Print(v1);
  
 }
-
+//Insert()函数测试
 void VectorTest2()
-{
-	 
+{ 
 	Vector<int> v;
 	v.PushBack(1);
 	v.PushBack(2);
 	v.PushBack(3);
 	v.PushBack(4);
 	v.PushBack(5);
+	Print(v);
+	v.Insert(v.Begin(),3,11);
+	Print(v);
  
  
 
