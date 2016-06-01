@@ -13,9 +13,9 @@ inline void Construct(T1* p, const T2& value) {
 
 //以下是Destroy()第一版本，接受一个指针
 template <class T>
-inline void Destroy(T* pointer) {
+inline void Destroy(T* Pointer) {
 	//调用dtor ~T()
-	pointer->~T();
+	Pointer->~T();
 }
 
 //以下是Destroy()第二版本，接受两个迭代器，此函数设法找出元素的数值型别

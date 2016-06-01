@@ -39,7 +39,7 @@ protected:
 		}
 		else 
 		{
-			const Size_Type old_size = size();
+			const Size_Type old_size = Size();
 			const Size_Type len = old_size != 0 ? 2 * old_size : 1;
 			Iterator new_start = Data_Allocator::Allocate(len);
 			Iterator new_finish = new_start;
@@ -84,7 +84,7 @@ protected:
 	{
 		return one > two ? one : two;
 	}
-	void _CheckExpan()
+	/*void _CheckExpan()
 	{
 		if (_finish == _end_of_storage)
 		{
@@ -99,11 +99,12 @@ protected:
 			_finish = _start + old_size;
 			_end_of_storage = _start + len;
 		}
-	}
+	}*/
 
 public:
 	Iterator Begin(){ return _start; }
 	Iterator End(){ return _finish; }
+	void Clear(){Erase(Begin(),End())}
 	Size_Type Size() { return Size_Type(End() - Begin()); }
 	Size_Type MaxSize() { return Size_Type(-1) / sizeof(T); }
 	Size_Type Capacity() { return Size_Type(_end_of_storage - Begin()); }
@@ -125,9 +126,26 @@ public:
 		Destroy(_start,_finish);
 		Deallocate();
 	}
+	//清除某个位置上的元素
+	Iterator Erase(Iterator pos)
+	{
+		if (pos + 1！ = End（）)
+			Copy(pos+1,_finish,pos);
+		--_finish;
+		Destroy(_finish);
+		return pos;
+	}
+	//清除[first,last)中所有元素
+	Iterator Erase(Iterator first,Iterator last)
+	{
+		Iterator i = copy(last,_finish,first);
+		Destroy(i,_finish);
+		_finish = _finish - (last-first);
+		return first;
+	}
 	Reference Front(){ return *Begin(); }//第一个元素
 	Reference Back(){ return *End(); }//最后一个元素
-	void PushBack(const T & x)
+	/*void PushBack(const T & x)
 	{
 		_CheckExpan();
 		assert(_finish != _end_of_storage);
@@ -135,30 +153,52 @@ public:
 		*_finish = x;
 		++_finish;
 	}
+
+
+	Iterator Erase(Iterator pos)
+	{
+	Iterator begin = pos + 1;
+	while (begin != _finish)
+	{
+	*(begin - 1) = *begin;
+	++begin;
+	}
+	--_finish;
+	return pos;
+	}
+	*/
+	void PushBack(const T & x)
+	{
+		if (_end_of_storage!=_finish)
+		{
+			Construct(_finish,x);
+			++_finish;
+		}
+		else
+		{
+			Insert_aux(End(),x);
+		}
+	}
 	void PopBack()
 	{
 		--_finish;	
 		Destroy(_finish);
 	}
-
-	Iterator Erase(Iterator pos)
+	/*扩增如果n大于当前的vector的容量(是容量，并非vector的size)，
+	将会引起自动内存分配。所以现有的pointer,references,iterators将会失效。*/
+	void Resize(Size_Type new_size,const T& x)
 	{
-		Iterator begin = pos + 1;
-		while (begin != _finish)
-		{
-			*(begin - 1) = *begin;
-			++begin;
-		}
-		--_finish;
-		return pos;
+		if (new_size < Size())//缩减
+			Erase(Begin() + new_size, End());
+		else
+			Insert(End(), new_size - Size(), x);
+	
 	}
-	//void Resize(Size_Type new_size,const T& x)
-	//{
-	//	if (new_size < size())
-	//		Erase(Begin()+new_size,End());
-	//	 
-
-	//}
+	//Resize()的作用是改变vector中元素的数目。
+	void Resize(Size_Type new_size)
+	{
+		Resize(new_size,T());
+	}
 };
 template <class T, class Malloc_Alloc>
 void Vector<T, Malloc_Alloc>::Insert(Iterator position, Size_Type n, const T& x) 
@@ -167,11 +207,15 @@ void Vector<T, Malloc_Alloc>::Insert(Iterator position, Size_Type n, const T& x)
 	{
 		if (Size_Type(_end_of_storage - _finish) >= n) 
 		{
+			//备用空间大于等于 新增元素
 			T x_copy = x;
+			//计算插入点之后现有的元素个数
 			const Size_Type elems_after = _finish - position;
 			Iterator old_finish = _finish;
 			if (elems_after > n)
 			{
+				//插入点之后的元素个数大于 新增元素的个数
+				//把
 				Uninitialized_Copy(_finish - n, _finish, _finish);
 				_finish += n;
 				Copy_Backward(position, old_finish - n, old_finish);
@@ -226,22 +270,29 @@ void Print(Vector<int> &const v)
 	}
 	cout << endl;
 }
+//测试Insert_aux(),PushBack()
 void VectorTest1()
 {
-	Vector<int> v;
+	Vector<int> v ;
 	v.PushBack(1);
 	v.PushBack(2);
 	v.PushBack(3);
 	v.PushBack(4);
 	v.PushBack(5);
+	int i = 0;
+	while (++i != 100000000)
+	{
+		v.PushBack(i);
+	}
+	
 	v.PopBack();
-	Print(v);
+	//Print(v);
 	Vector<int> v1(4, 2);
 	v1.PushBack(3);
-	Print(v1);
+	//Print(v1);
  
 }
-//Insert()函数测试
+//Insert(),Resize()函数测试
 void VectorTest2()
 { 
 	Vector<int> v;
@@ -252,16 +303,20 @@ void VectorTest2()
 	v.PushBack(5);
 	Print(v);
 	v.Insert(v.Begin(),3,11);
+	v.Insert(v.Begin()+6,1,33);
+	v.Insert(v.End(),4,12);
 	Print(v);
- 
- 
-
- 
- 
+	v.Resize(5);
+	Print(v);
+    v.Resize(7);
+	Print(v);
+	v.Resize(9,7);
+	Print(v);
+  
 }
 void Vector_Test()
 {
 	VectorTest2();
-	VectorTest1();
+	//VectorTest1();
 
 }
