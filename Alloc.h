@@ -1,6 +1,6 @@
 #pragma once
 //#include<stdarg.h>
- #define __DEBUG__
+ //#define __DEBUG__
 static string GetFileName(const string& path)
 {
 	char ch = '/';
