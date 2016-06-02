@@ -2,6 +2,7 @@
 #include<iostream>
 using namespace std;
 #include"Alloc.h"
+#include"Construct.h"
 template<class T>
 struct __List_Node
 {
@@ -125,7 +126,7 @@ protected:
 	//配置一个节点并回传
 	Link_Type Get_Node(){ return List_Node_Allocator::Allocate(); }
 	//释放一个节点
-	void Put_Node(Link_Type p){ List_Node_Allocator::Deallocate(); }
+	void Put_Node(Link_Type p){ List_Node_Allocator::Deallocate(p); }
 	
 	//产生（配置并构造）一个节点，带有元素值
 	Link_Type Create_Node(const T&x)
@@ -204,7 +205,7 @@ public:
 		Link_Type prev_node = Link_Type(position._node->_prev);
 		prev_node->_next = next_node;
 		next_node->_prev = prev_node;
-		Destroy_Node(position.node);
+		Destroy_Node(position._node);
 		return Iterator(next_node);
 	}
 
@@ -218,10 +219,10 @@ public:
 	bool Empty()const{ return _node->_next == _node; }
 	Reference Front(){ return *Begin(); }
 	Reference Back(){ return *(--End()); }
-	Size_Type Size()const
+	Size_Type Size()//const
 	{
 		Size_Type result = 0;
-		Distance(Begin(),End(),result);
+		result=Distance(Begin(),End());
 		return result;
 	}
 	/*void Clear()
@@ -280,7 +281,43 @@ public:
 			next = first;//修正区段范围
 		}
 	}
- 
+
+
+	 //将x合并到*this身上，前提是两个List都已经有序
+	void  Merge(List<T, Alloc>& x)
+	{
+		Iterator first1 = Begin();
+		Iterator last1 = End();
+		Iterator first2 = x.Begin();
+		Iterator last2 = x.End();
+		while (first1 != last1 && first2 != last2)
+		if (*first2 < *first1) 
+		{
+			Iterator next = first2;
+			Transfer(first1, first2, ++next);
+			first2 = next;
+		}
+		else
+			++first1;
+		if (first2 != last2)
+			Transfer(last1, first2, last2);
+	}
+
+protected:
+	//将[first,last)内所有元素移动到postition之前
+	void Transfer(Iterator position, Iterator first, Iterator last) 
+	{
+		if (position != last)
+		{
+			(*(Link_Type((*last._node)._prev)))._next = position._node;
+			(*(Link_Type((*first._node)._prev)))._next = last._node;
+			(*(Link_Type((*position._node)._prev)))._next = first._node;
+			Link_Type tmp = Link_Type((*position._node)._prev);
+			(*position._node)._prev = (*last._node)._prev;
+			(*last._node)._prev = (*first._node)._prev;
+			(*first._node)._prev = tmp;
+		}
+	}
 };
 ////////////////////////////////////////////////////////////////////////////
 
@@ -298,42 +335,86 @@ void Print(List<int>& l)
 void ListTest1()
 {
 	List<int> l;
-	l.PushBack(3);
-	l.PushBack(2);
-	l.PushBack(5);
 	l.PushBack(1);
-	l.PushBack(9);
-	l.PushBack(8);
+	l.PushBack(2);
+	l.PushBack(3);
+	l.PushBack(4);
 	Print(l);
+	l.PushFront(5);
+	l.PushFront(6);
+	l.PushFront(7);
+	Print(l);
+	l.PopBack();
+	l.PopFront();
+	Print(l);
+	cout<<"数据个数："<<l.Size()<<endl;
+	cout << "最后一个元素："<<l.Back() << endl;
+	cout << " Begin()"<<*l.Begin() <<"  Empty()"<< l.Empty() \
+		 <<" Front()"<< l.Front() << endl;
+	l.Clear();
  
 }
+//Unique();Remove()
 void ListTest2()
 {
 
 	List<int> l;
-	l.PushBack(3);
-	l.PushBack(2);
-	l.PushBack(5);
 	l.PushBack(1);
-	l.PushBack(9);
-	l.PushBack(8);
+	l.PushBack(1);
+	l.PushBack(1);
+	l.PushBack(3);
+	l.PushBack(3);
+	l.PushBack(3);
+	l.PushBack(1);
+	l.PushBack(1);
+	l.PushBack(1);
+	l.PushBack(3);
 
 	Print(l);
-	List<int> l2;
-	l2.PushBack(6);
-	l2.PushBack(9);
-	l2.PushBack(2);
-	l2.PushBack(4);
-	l2.PushBack(19);
-	l2.PushBack(28);
-
-	Print(l2);
-
+	l.Unique();
+	Print(l);
+	l.PushBack(3);
+	l.PushBack(3);
+	l.PushBack(3);
+	Print(l);
+	l.Remove(3);
+	Print(l);
  
 }
-
+//Merge()
+void ListTest3()
+{
+	cout << "有序合并" << endl;
+	List<int> l1;
+	l1.PushBack(1);
+	l1.PushBack(2);
+	l1.PushBack(3);
+	l1.PushBack(5);
+	l1.PushBack(9);
+	Print(l1);
+	List<int> l2;
+	l2.PushBack(2);
+	l2.PushBack(4);
+	l2.PushBack(6);
+	l2.PushBack(7);
+	l2.PushBack(8);
+	Print(l2);
+	l1.Merge(l2);
+	Print(l1);
+	cout << "未有序合并" <<endl;
+	l1.PushFront(41);
+	l2.PushBack(32);
+	l2.PushBack(31);
+	l2.PushBack(3);
+	l2.PushBack(12);
+	Print(l1);
+	Print(l2);
+	l1.Merge(l2);
+	Print(l1);
+}
 void List_Test()
 {
-	ListTest1();
+	//ListTest1();
 	//ListTest2();
+	ListTest3();
 }
