@@ -282,7 +282,26 @@ public:
 		}
 	}
 
-
+public:
+	//将x接合于position所指位置之前，x必须不同于*this
+	void Splice(Iterator position, List& x) {
+		if (!x.Empty())
+			Transfer(position, x.Begin(), x.End());
+	}
+	//将i所指向元素接合于Position所指位置之前，pos和i可以指向同一个List
+	void Splice(Iterator position, List&, Iterator i) {
+		Iterator j = i;
+		++j;
+		if (position == i || position == j) return;
+		Transfer(position, i, j);
+	}
+	//将[first,last)所指向元素接合于Position所指位置之前,
+	//pos和[first,last)可以指向同一个List
+	//pos不能位于[first,last)之内
+	void Splice(Iterator position, List&, Iterator first, Iterator last) {
+		if (first != last)
+			Transfer(position, first, last);
+	}
 	 //将x合并到*this身上，前提是两个List都已经有序
 	void  Merge(List<T, Alloc>& x)
 	{
@@ -303,7 +322,54 @@ public:
 			Transfer(last1, first2, last2);
 	}
 
+
+ 
+	void  Reverse()
+	{
+		if (_node->_next == _node || Link_Type(_node->_next)->_next == _node) return;
+		Iterator first = Begin();
+		++first;
+		while (first != End())
+		{
+			Iterator old = first;
+			++first;
+			Transfer(Begin(), old, first);
+		}
+	}
+
+	 
+	void  Sort() 
+	{
+		if (_node->_next == _node || (Link_Type(_node->_next))->_next == _node) return;
+		List<T, Alloc> carry;
+		List<T, Alloc> counter[64];
+		int fill = 0;
+		while (!Empty())
+		{
+			carry.Splice(carry.Begin(), *this, Begin());
+			int i = 0;
+			while (i < fill && !counter[i].Empty())
+			{
+				counter[i].Merge(carry);
+				carry.Swap(counter[i++]);
+			}
+			carry.Swap(counter[i]);
+			if (i == fill) ++fill;
+		}
+
+		for (int i = 1; i < fill; ++i) counter[i].Merge(counter[i - 1]);
+		Swap(counter[fill - 1]);
+	}
 protected:
+	//?存在问题
+	inline void Swap( List<T>& y)
+	{
+		 
+		List<T,Alloc> tmp(*this);
+		
+		(*this)._node->_data = y._node->_data;
+		y._node->_data = tmp._node->_data;
+	}
 	//将[first,last)内所有元素移动到postition之前
 	void Transfer(Iterator position, Iterator first, Iterator last) 
 	{
@@ -412,9 +478,33 @@ void ListTest3()
 	l1.Merge(l2);
 	Print(l1);
 }
+//Sort(),Reverse(),Splice()
+void ListTest4()
+{
+	List<int> l1;
+	l1.PushBack(3);
+	l1.PushBack(5);
+	l1.PushBack(9);
+	l1.PushBack(1);
+	l1.PushBack(6);
+	l1.PushBack(4);
+	cout << "未排序：";
+	Print(l1);
+	l1.Reverse();
+	cout << "逆至后：";
+	Print(l1);
+
+	 l1.Sort();
+	 cout << "排序后：";
+	 Print(l1);
+	
+
+
+}
 void List_Test()
 {
 	//ListTest1();
 	//ListTest2();
-	ListTest3();
+	//ListTest3();
+	ListTest4();
 }
