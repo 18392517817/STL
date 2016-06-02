@@ -9,7 +9,8 @@ void Fill(ForwardIterator first, ForwardIterator last, const T& value)
 		*first = value;
 }
 template <class OutputIterator, class Size, class T>
-OutputIterator Fill_n(OutputIterator first, Size n, const T& value) {
+OutputIterator Fill_n(OutputIterator first, Size n, const T& value) 
+{
 	for (; n > 0; --n, ++first)
 		*first = value;
 	return first;
@@ -55,13 +56,15 @@ inline OutputIterator Copy(InputIterator first, InputIterator last,
 	return __Copy_Dispatch<InputIterator, OutputIterator>()(first, last, result);
 }
 
-inline char* Copy(const char* first, const char* last, char* result) {
+inline char* Copy(const char* first, const char* last, char* result) 
+{
 	memmove(result, first, last - first);
 	return result + (last - first);
 }
 
 inline wchar_t* Copy(const wchar_t* first, const wchar_t* last,
-	wchar_t* result) {
+	wchar_t* result) 
+{
 	memmove(result, first, sizeof(wchar_t)* (last - first));
 	return result + (last - first);
 }
@@ -80,7 +83,8 @@ struct __Copy_Dispatch
 template <class T>
 struct __Copy_Dispatch<T*, T*>
 {
-	T* operator()(T* first, T* last, T* result) {
+	T* operator()(T* first, T* last, T* result)
+	{
 		typedef typename __Type_Traits<T>::Has_Trivial_Assignment_Operator t;
 		return __Copy_t(first, last, result, t());
 	}
@@ -89,7 +93,8 @@ struct __Copy_Dispatch<T*, T*>
 template <class T>
 struct __Copy_Dispatch<const T*, T*>
 {
-	T* operator()(const T* first, const T* last, T* result) {
+	T* operator()(const T* first, const T* last, T* result) 
+	{
 		typedef typename __Type_Traits<T>::Has_Trivial_Assignment_Operator t;
 		return __Copy_t(first, last, result, t());
 	}
@@ -97,13 +102,15 @@ struct __Copy_Dispatch<const T*, T*>
 
 
 template <class T>
-inline T* __Copy_t(const T* first, const T* last, T* result, __True_Type) {
+inline T* __Copy_t(const T* first, const T* last, T* result, __True_Type)
+{
 	memmove(result, first, sizeof(T)* (last - first));
 	return result + (last - first);
 }
 
 template <class T>
-inline T* __Copy_t(const T* first, const T* last, T* result, __False_Type) {
+inline T* __Copy_t(const T* first, const T* last, T* result, __False_Type) 
+{
 	return __Copy_d(first, last, result, (ptrdiff_t*)0);
 }
 
