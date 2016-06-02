@@ -10,8 +10,8 @@ void Test()
 {
 	// Iterator_Test();
 	//Vector_Test();
-	//Alloc_Test();
-	List_Test();
+	Alloc_Test();
+	//List_Test();
 }
 int main()
 {

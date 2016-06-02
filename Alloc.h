@@ -1,6 +1,11 @@
 #pragma once
-//#include<stdarg.h>
- //#define __DEBUG__
+#ifdef __USE_MALLOC
+typedef __Malloc_Alloc_Template<0> alloc;
+#else
+typedef __Default_Alloc_Template< 0,0> alloc;
+#endif
+
+ #define __DEBUG__
 static string GetFileName(const string& path)
 {
 	char ch = '/';
@@ -156,7 +161,7 @@ private:
 	enum { __NFREELISTS = __MAX_BYTES / __ALIGN };//链表值
  
 	static size_t ROUND_UP(size_t bytes) {
-		return (((bytes)+__ALIGN - 1) & ~(__ALIGN - 1));
+		return (((bytes)+__ALIGN - 1) & ~(__ALIGN - 1));//+7不会超过下一个数量级
 	}
  
 	static  size_t FREELIST_INDEX(size_t bytes) {
@@ -177,10 +182,9 @@ private:
 
 		//分配n 个bytes的内存
 		//如果不够，有多少分配多少
-
 		int nobjs = 20;
 		char* chunk = Chunk_Alloc(n,nobjs);
-
+		//
 		//如果只分配到一块，直接返回这块内存
 		if (nobjs == 1)
 			return chunk;
@@ -202,6 +206,7 @@ private:
 
 		return result;
 	}
+
 	//从内存池中分配大块内存
 	static char *Chunk_Alloc(size_t size, int &nobjs)
 	{
@@ -233,7 +238,7 @@ private:
 		}
 		else
 		{
-			//若内存池中还有剩余内存，则将它头插到合适的自由链表
+			//若内存池中还有剩余内存，则将它头插到合适的自由链表,一般为多少就插入在多少的下边
 			if (bytesLeft > 0)
 			{
 				size_t index = FREELIST_INDEX(bytesLeft);
@@ -245,7 +250,7 @@ private:
 			}
 
 			//从系统堆分配两倍+已分配的_heap_size/8的内存到内存池
-			 
+			//+ ROUND_UP(_heap_size >> 4)  调节 反馈  表示系统分配的多少  多分配一点
 			size_t bytes_To_Get = 2 * bytesNeed + ROUND_UP(_heap_size >> 4);
 			_start_free = (char*)malloc(bytes_To_Get);
 
@@ -254,15 +259,17 @@ private:
 			if (_start_free == NULL)
 			{
 				__TRACE_DEBUG("系统堆已没有空间，请到自由链表中看看\n");
-	
+				//for (int i = size+__ALIGN; i <= __MAX_BYTES; i += __ALIGN)
 				for (int i = size; i <= __MAX_BYTES; i+=__ALIGN)
 				{
-					Obj* head = Free_List[FREELIST_INDEX(size)];
+					Obj* head = Free_List[FREELIST_INDEX(i)];
 					if (head)
 					{
+						//切一块  ？(char*)可以指针+ 方便
 						_start_free = (char*)head;
 						head = head->Free_List_Link;
 						_end_free = _start_free + i;
+						//不用自己切分,调用
 						return Chunk_Alloc(size, nobjs);
 					}
 				}
@@ -271,13 +278,15 @@ private:
 				__TRACE_DEBUG("系统堆和自由链表都无内存，转到一级空间配置器\n");
 				
 				_end_free = 0;
+				//句柄设置，自己不会设置;抛出异常，结束
 				_start_free = (char*)Malloc_Alloc::Allocate(bytes_To_Get);
-
+				//不会再向下走，Allocate;
 			}
+			//分配到
 			_heap_size +=bytes_To_Get;
 			_end_free = _start_free +bytes_To_Get;
 
-			//递归调用获取内存
+			//递归调用获取内存，够20个，复用，一定在第一个分支结束
 			return Chunk_Alloc(size, nobjs);
 
 		}
@@ -287,7 +296,7 @@ private:
 	// Chunk allocation state.
 	static char *_start_free;//内存池开始的地方
 	static char *_end_free;//内存池结束的地方
-	static size_t _heap_size;
+	static size_t _heap_size;//内存池大小
 public:
 
 	/* n must be > 0      */
@@ -408,7 +417,7 @@ char *__Default_Alloc_Template<threads, inst>::_end_free = 0;
 template<bool threads, int inst>
 size_t __Default_Alloc_Template<threads, inst>::_heap_size = 0;
 
-typedef __Default_Alloc_Template<0, 0> Default_Alloc;
+//typedef __Default_Alloc_Template<0, 0> Default_Alloc;
 
 ///////////////////////////////////////////////////////////////////////
 //配置器的标准接口
@@ -417,10 +426,12 @@ class Simple_Alloc
 {
 
 public:
+	//n个对象
 	static T *Allocate(size_t n)
 	{
 		return 0 == n ? 0 : (T*)Alloc::Allocate(n * sizeof (T));
 	}
+	//一个对象
 	static T *Allocate(void)
 	{
 		return (T*)Alloc::Allocate(sizeof (T));
@@ -440,7 +451,7 @@ public:
 
 //测试内存池一级、二级空间配置器
 
-void Alloc_Test1()
+void AllocTest1()
 {
 	//测试一级配置器
 	cout << "测试调用一级空间配置器分配内存" << endl;
@@ -493,7 +504,7 @@ void Alloc_Test1()
  
 }
 
-void Alloc_Test2()
+void AllocTest2()
 {
 	cout << "测试内存池空间不足分配"<<endl;
 	char *p1 = Simple_Alloc<char, Default_Alloc>::Allocate(8);
@@ -503,7 +514,7 @@ void Alloc_Test2()
 
 }
 
-void Alloc_Test3()
+void AllocTest3()
 {
 	cout << "测试系统堆内存耗尽" << endl;
 	Simple_Alloc<char, Default_Alloc>::Allocate(1024 * 1024 * 1024);
@@ -517,10 +528,15 @@ void Alloc_Test3()
 	}
 
 }
+
+void AllocTest4()
+{
+
+}
 void Alloc_Test()
 {
-	Alloc_Test1();
-	Alloc_Test2();
+	AllocTest1();
+	AllocTest2();
 	//电脑卡死，不过几分钟后就恢复正常
-	//Alloc_Test3();
+	//AllocTest3();
 }
